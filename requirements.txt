@@ -1,0 +1,9 @@
+Pillow
+keras
+matplotlib
+opencv-python
+imutils
+tensorflow
+scikit-learn
+pandas
+tqdm
