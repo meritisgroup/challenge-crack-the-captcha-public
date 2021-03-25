@@ -44,22 +44,6 @@
 		</dependency>
 <!-- 
  -->
-
-
-	<!-- https://mvnrepository.com/artifact/jmagick/jmagick -->
-	<dependency>
-		<groupId>jmagick</groupId>
-		<artifactId>jmagick</artifactId>
-		<version>6.6.9</version>
-	</dependency>
-	
-	
- <dependency>
-    <groupId>org.bytedeco</groupId>
-    <artifactId>javacv-platform</artifactId>
-    <version>1.5.5</version>
-  </dependency>
-
 		<dependency>
 			<groupId>org.deeplearning4j</groupId>
 			<artifactId>deeplearning4j-core</artifactId>
