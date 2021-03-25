@@ -1,5 +1,7 @@
 # Challenge Crack The Captcha by Meritis
 
+https://github.com/meritisgroup/challenge-crack-the-captcha-public/tree/java
+
 ## Prepare Java environment
 
 requirement: Java >= 11
