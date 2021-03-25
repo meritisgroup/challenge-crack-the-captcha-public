@@ -1,0 +1,92 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>meritis.event</groupId>
+	<artifactId>crackTheCaptcha</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<dl4j.version>1.0.0-beta7</dl4j.version>
+		<nd4j.version>1.0.0-beta7</nd4j.version>
+		<slf4j.version>2.0.0-alpha1</slf4j.version>
+
+	</properties>
+
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.nd4j</groupId>
+			<artifactId>nd4j-native-platform</artifactId>
+			<version>${nd4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.nd4j</groupId>
+			<artifactId>nd4j-native</artifactId>
+			<version>${nd4j.version}</version>
+			<classifier>windows-x86_64-avx2</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-cuda-10.2</artifactId>
+			<version>1.0.0-beta7</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>cuda-platform-redist</artifactId>
+			<version>10.2-7.6-1.5.3</version>
+		</dependency>
+<!-- 
+ -->
+
+
+	<!-- https://mvnrepository.com/artifact/jmagick/jmagick -->
+	<dependency>
+		<groupId>jmagick</groupId>
+		<artifactId>jmagick</artifactId>
+		<version>6.6.9</version>
+	</dependency>
+	
+	
+ <dependency>
+    <groupId>org.bytedeco</groupId>
+    <artifactId>javacv-platform</artifactId>
+    <version>1.5.5</version>
+  </dependency>
+
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-core</artifactId>
+			<version>${dl4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.deeplearning4j</groupId>
+			<artifactId>deeplearning4j-ui</artifactId>
+			<version>${dl4j.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.bytedeco</groupId>
+			<artifactId>javacpp</artifactId>
+			<version>1.5.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+	</dependencies>
+</project>
