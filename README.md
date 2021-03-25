@@ -15,8 +15,19 @@ mettre le <classifier>linux-x86_64-avx512</classifier> dans le pom.xml
 
 ## Code
 
-### Read Images
-`ParcoursData.java`
 change ` dataPath ` to path to data (directory train & test)
 
-complete to split a captcha into letters
+### Read Images
+`ParcoursData.java` read image, split a captcha into letters
+
+### Generate samples
+`OxGenerate.java` prepare datasets of X O I
+
+### Train network
+`TrainNetwork.java` train a network with deeplearning4j
+
+### View learning statistics
+`ViewNetworkLearningData.java` launch DL4J training UI
+
+### Use network
+`UseNetwork.java` read an image and guess class with the network
