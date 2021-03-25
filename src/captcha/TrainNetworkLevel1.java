@@ -38,7 +38,7 @@ public class TrainNetworkLevel1 {
 	final static String dataPath = "datas"; // Path to data folder
 	final static String modelPath = dataPath + "/models"; // Path to models folder
 	final static String logsPath = dataPath + "/models/logs"; // Path to models folder
-	final static String trainPath = dataPath + "/gen/train"; // Path to train folder
+	final static String trainPath = dataPath + "/prepare"; // Path to train folder
 
 	private static final String[] allowedExtensions = BaseImageLoader.ALLOWED_FORMATS;
 	private static final Random randNumGen = new Random(735122); // Allow replay
@@ -46,12 +46,13 @@ public class TrainNetworkLevel1 {
 	public static void main(String[] args) throws IOException {
 		int batchSize = 64; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
-		int height = 28;
-		int width = 28;
+		int height = 35;
+		int width = 20;
 		int channels = 1;
-		int numEpochs = 20;
+		int numEpochs = 10;
 
-		String modelName = "custom";
+		String modelName = "level1";
+		String statsFileName = "statsLevel1";
 		
 		ensureDirectory(modelPath);
 		ensureDirectory(logsPath);
@@ -61,7 +62,7 @@ public class TrainNetworkLevel1 {
 			throw new RuntimeException("No datas found in " + parentDir.getAbsolutePath());
 
 		int classes = parentDir.list().length;
-		var conf = networkConfiguration(width, height, 1, classes, rngSeed);
+		var conf = networkConfiguration(height, width, 1, classes, rngSeed);
 		var network = new MultiLayerNetwork(conf);
 
 		network.init();
@@ -78,6 +79,7 @@ public class TrainNetworkLevel1 {
 
 		ImageTransform transform = new MultiImageTransform(randNumGen, new RotateImageTransform(10.f));
 
+		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
 
 		ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, labelMaker);
@@ -105,7 +107,7 @@ public class TrainNetworkLevel1 {
 		boolean reportGC = true;
 		network.addListeners(new PerformanceListener(listenerFrequency, reportScore, reportGC));
 
-		StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/stats.bin"));
+		StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/"+statsFileName+".bin"));
 		network.addListeners(new StatsListener(statsStorage, listenerFrequency));
 		// Listener for an UI on http://localhost:9000
 		// UIServer uiServer = UIServer.getInstance();
@@ -137,19 +139,18 @@ public class TrainNetworkLevel1 {
 			int outputNum, int rngSeed) {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
-				.updater(new Nesterovs(0.0005, 0.9)) // learning rate,
-																										// momentum
+				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 				.list()
 				.layer(new DenseLayer.Builder()
 						.name("dense1")
 						.activation(Activation.RELU)
-						.nOut(1024).build())
+						.nOut(512).build())
 				.layer(new DenseLayer.Builder()
 						.name("dense2")
 						.activation(Activation.RELU)
-						.nOut(512).build())
+						.nOut(256).build())
 				.layer(new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
 						.name("output")
 						.activation(Activation.SOFTMAX)

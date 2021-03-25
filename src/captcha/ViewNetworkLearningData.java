@@ -16,7 +16,9 @@ public class ViewNetworkLearningData {
 
 	
 	public static void main(String[] args) {
-		StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/stats.bin"));
+		String statsFileName = "statsLevel1";
+		
+		StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/"+statsFileName+".bin"));
 		// Listener for an UI on http://localhost:9000
 		UIServer uiServer = UIServer.getInstance();
 		uiServer.attach(statsStorage);
