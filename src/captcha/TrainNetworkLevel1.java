@@ -16,6 +16,7 @@ import org.datavec.image.transform.RotateImageTransform;
 import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.CacheMode;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -49,7 +50,7 @@ public class TrainNetworkLevel1 {
 		int height = 35;
 		int width = 20;
 		int channels = 1;
-		int numEpochs = 10;
+		int numEpochs = 3;
 
 		String modelName = "level1";
 		String statsFileName = "statsLevel1";
@@ -77,7 +78,8 @@ public class TrainNetworkLevel1 {
 		InputSplit trainData = filesInDirSplit[0];
 		InputSplit testData = filesInDirSplit[0];
 
-		ImageTransform transform = new MultiImageTransform(randNumGen, new RotateImageTransform(10.f));
+		ImageTransform transform = new MultiImageTransform();
+		//ImageTransform transform = new MultiImageTransform(randNumGen, new RotateImageTransform(10.f));
 
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
@@ -139,23 +141,25 @@ public class TrainNetworkLevel1 {
 			int outputNum, int rngSeed) {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
-				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
+				.cacheMode(CacheMode.HOST)
+				.updater(new Nesterovs(0.01, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 				.list()
 				.layer(new DenseLayer.Builder()
 						.name("dense1")
 						.activation(Activation.RELU)
-						.nOut(512).build())
-				.layer(new DenseLayer.Builder()
+						.nOut(256).build())
+				/*.layer(new DenseLayer.Builder()
 						.name("dense2")
 						.activation(Activation.RELU)
-						.nOut(256).build())
+						.nOut(128).build())*/
 				.layer(new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
 						.name("output")
 						.activation(Activation.SOFTMAX)
 						.nOut(outputNum).build())
 				.setInputType(InputType.convolutional(numRows, numColumns, channels)) // InputType.convolutional for normal image or convolutionalFlat 
+				//.setInputType(InputType.convolutional(numRows, numColumns, channels)) // InputType.convolutional for normal image or convolutionalFlat 
 				.build();
 	}
 	
