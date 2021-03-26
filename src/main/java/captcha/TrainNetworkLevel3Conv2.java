@@ -114,9 +114,9 @@ public class TrainNetworkLevel3Conv2 {
 		dataTestIter.setPreProcessor(imagePreProcessingScaler);
 
 		// pass a training listener that reports score every 10 iterations
-		int listenerFrequency = 100;
+		int listenerFrequency = 200;
 		network.addListeners(new ScoreIterationListener(listenerFrequency));
-		boolean reportScore = true;
+		boolean reportScore = false;
 		boolean reportGC = true;
 		network.addListeners(new PerformanceListener(listenerFrequency, reportScore, reportGC));
 
