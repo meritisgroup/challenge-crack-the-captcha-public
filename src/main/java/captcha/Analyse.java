@@ -26,8 +26,8 @@ public class Analyse {
 	
 	public static void main(String[] args) throws FileNotFoundException {
 
-		String modelName = "level3Conv_2";
-		String resultatSuffix = "";//".train";
+		String modelName = "level3Bg_2_";
+		String resultatSuffix = ".train";
 		
 		String coeffs = modelPath +"/"+modelName+resultatSuffix+".stats.txt";
 

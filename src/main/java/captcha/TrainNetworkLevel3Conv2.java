@@ -129,7 +129,7 @@ public class TrainNetworkLevel3Conv2 {
 		int height = 35;
 		int width = 20;
 		int channels = 3;
-		int numEpochs = 1000;
+		int numEpochs = 300;
 
 		String modelName = "level3Bg_2_";
 		String statsFileName = "stats_"+modelName;
@@ -164,8 +164,8 @@ public class TrainNetworkLevel3Conv2 {
 
 		//ImageTransform transform = null;
 		ImageTransform transform = new MultiImageTransform(randNumGen
-				, new ScaleImageTransform(randNumGen, 1.f)
-				, new RotateImageTransform(randNumGen, 1.f));
+				, new ScaleImageTransform(randNumGen, 4.f)
+				, new RotateImageTransform(randNumGen, 10.f));
 
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
@@ -229,6 +229,7 @@ public class TrainNetworkLevel3Conv2 {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
 				.cacheMode(CacheMode.DEVICE)
+				//.updater(new Nesterovs(0.001, 0.9)) // learning rate, momentum
 				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
