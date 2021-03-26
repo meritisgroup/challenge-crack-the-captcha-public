@@ -13,6 +13,7 @@ import org.datavec.image.recordreader.ImageRecordReader;
 import org.datavec.image.transform.ImageTransform;
 import org.datavec.image.transform.MultiImageTransform;
 import org.datavec.image.transform.RotateImageTransform;
+import org.datavec.image.transform.ScaleImageTransform;
 import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -52,12 +53,12 @@ public class TrainNetworkLevel3Conv2 {
 		ParcoursDataSolutionLevel1.main(args);
 	}
 	public static void mainN(String[] args) throws IOException {
-		int batchSize = 256; // how many examples to simultaneously train in the network
+		int batchSize = 1024; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
 		int channels = 3;
-		int numEpochs = 500;
+		int numEpochs = 1000;
 
 		String modelName = "level3Small_2_";
 		String statsFileName = "stats_"+modelName;
@@ -86,7 +87,9 @@ public class TrainNetworkLevel3Conv2 {
 		InputSplit testData = filesInDirSplit[0];
 
 		//ImageTransform transform = null;
-		ImageTransform transform = new MultiImageTransform(randNumGen, new RotateImageTransform(10.f));
+		ImageTransform transform = new MultiImageTransform(randNumGen
+				, new ScaleImageTransform(randNumGen, 4.f)
+				, new RotateImageTransform(randNumGen, 10.f));
 
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
@@ -149,10 +152,10 @@ public class TrainNetworkLevel3Conv2 {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
 				.cacheMode(CacheMode.HOST)
-				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
+				.updater(new Nesterovs(0.0001, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-				.dropOut(0.95)
+				.dropOut(0.9)
 				.list()
 				.layer(new ConvolutionLayer.Builder(5, 5)//5, 5
 						.name("filter")
@@ -204,7 +207,7 @@ public class TrainNetworkLevel3Conv2 {
 				.layer(new DenseLayer.Builder()
 						.name("dense2")
 						.activation(Activation.RELU)
-						.nOut(256).build())
+						.nOut(512).build())
 				/*.layer(new DenseLayer.Builder()
 						.name("dense2")
 						.activation(Activation.RELU)
