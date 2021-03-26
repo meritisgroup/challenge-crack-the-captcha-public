@@ -170,11 +170,11 @@ public class TrainNetworkLevel3Conv2 {
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
 
-		//Path samplesPath = copyIntoMemory(trainPath);
-		ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, labelMaker);
+		Path samplesPath = copyIntoMemory(trainPath);
+		ImageRecordReader recordReader = new MemFSImageRecordReader(height, width, channels, labelMaker, samplesPath);
 		recordReader.initialize(trainData, transform);
 
-		ImageRecordReader recordTestReader = new ImageRecordReader(height, width, channels, labelMaker);
+		ImageRecordReader recordTestReader = new MemFSImageRecordReader(height, width, channels, labelMaker, samplesPath);
 		recordTestReader.initialize(testData);
 
 		int outputNum = recordReader.numLabels();
@@ -228,7 +228,7 @@ public class TrainNetworkLevel3Conv2 {
 			int outputNum, int rngSeed) {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
-				.cacheMode(CacheMode.HOST)
+				.cacheMode(CacheMode.DEVICE)
 				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
