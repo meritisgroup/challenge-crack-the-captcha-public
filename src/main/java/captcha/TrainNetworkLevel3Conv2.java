@@ -83,8 +83,9 @@ public class TrainNetworkLevel3Conv2 {
 		BalancedPathFilter pathFilter = new BalancedPathFilter(randNumGen, allowedExtensions, labelMaker);
 
 		InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter); // 80% train 20% tests
+		InputSplit[] filesInDirSplitTest = filesInDir.sample(pathFilter,20); // 80% train 20% tests
 		InputSplit trainData = filesInDirSplit[0];
-		InputSplit testData = filesInDirSplit[0];
+		InputSplit testData = filesInDirSplitTest[0];
 
 		//ImageTransform transform = null;
 		ImageTransform transform = new MultiImageTransform(randNumGen
