@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>meritis.event</groupId>
@@ -42,25 +43,24 @@
 			<artifactId>cuda-platform-redist</artifactId>
 			<version>10.2-7.6-1.5.3</version>
 		</dependency>
-<!-- 
- -->
+		<!-- -->
 		<dependency>
 			<groupId>org.deeplearning4j</groupId>
 			<artifactId>deeplearning4j-core</artifactId>
 			<version>${dl4j.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.deeplearning4j</groupId>
 			<artifactId>deeplearning4j-ui</artifactId>
 			<version>${dl4j.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.bytedeco</groupId>
-			<artifactId>javacpp</artifactId>
-			<version>1.5.5</version>
-		</dependency>
+		
+		
+<dependency>
+    <groupId>com.github.marschall</groupId>
+    <artifactId>memoryfilesystem</artifactId>
+    <version>2.1.0</version>
+</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
