@@ -16,7 +16,7 @@ public class ViewNetworkLearningData {
 
 	
 	public static void main(String[] args) {
-		String statsFileName = "statsLevel1";
+		String statsFileName = "stats_" + "level3Conv_2";
 		
 		StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/"+statsFileName+".bin"));
 		// Listener for an UI on http://localhost:9000

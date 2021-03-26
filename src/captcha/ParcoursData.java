@@ -5,6 +5,7 @@ import static org.bytedeco.opencv.global.opencv_imgcodecs.imwrite;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.function.Predicate;
 
 import org.bytedeco.javacv.Java2DFrameUtils;
 import org.bytedeco.opencv.opencv_core.Mat;
@@ -20,7 +21,10 @@ public class ParcoursData {
 	final static String preparePath = dataPath + "/prepare"; // Path to test folder
 
 	public static void main(String[] args) {
-		ensureDirectories();
+		mainF(preparePath, __ -> true);
+	}
+	public static void mainF(String path, Predicate<String> filter) {
+		ensureDirectories(path);
 
 		System.out.println("Data directory : " + new File(dataPath).getAbsolutePath());
 
@@ -30,7 +34,8 @@ public class ParcoursData {
 		File[] listFiles = new File(trainPath).listFiles();
 		
 		for (File f : listFiles) {
-			if (f.getName().contains("level1")) {
+			if (filter.test(f.getName())) 
+			{
 
 				String fileName = f.getName();
 
@@ -45,11 +50,15 @@ public class ParcoursData {
 
 					// generate matrix of the interested region, from original_image
 					Mat cropped = new Mat(origin, rectCrop);
+					//Mat gray = new Mat(cropped.size().width(), cropped.size().height(), COLOR_BGR2GRAY);
 
-					String letterPath = preparePath + "/" + letters[i];
+					//cvtColor(cropped, gray, COLOR_BGR2GRAY);
+					
+					String letterPath = path + "/" + letters[i];
 					ensureDirectory(letterPath);
 
 					imwrite(letterPath + "/" + (compteur++) + ".png", cropped);
+					//imwrite(letterPath + "/" + (compteur++) + ".png", gray);
 				}
 			}
 		}
@@ -61,10 +70,10 @@ public class ParcoursData {
 	
 	
 
-	static void ensureDirectories() {
+	static void ensureDirectories(String path) {
 		ensureDirectory(debugPath);
 		ensureDirectory(tmpPath);
-		ensureDirectory(preparePath);
+		ensureDirectory(path);
 	}
 
 	private static void ensureDirectory(String path) {

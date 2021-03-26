@@ -17,11 +17,14 @@ import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.CacheMode;
+import org.deeplearning4j.nn.conf.ConvolutionMode;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
+import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
@@ -34,26 +37,31 @@ import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-public class TrainNetworkLevel1 {
+public class TrainNetworkLevel3Small {
 
 	final static String dataPath = "datas"; // Path to data folder
 	final static String modelPath = dataPath + "/models"; // Path to models folder
 	final static String logsPath = dataPath + "/models/logs"; // Path to models folder
-	final static String trainPath = dataPath + "/prepare"; // Path to train folder
+	final static String trainPath = dataPath + "/prepareLvl3"; // Path to train folder
 
 	private static final String[] allowedExtensions = BaseImageLoader.ALLOWED_FORMATS;
 	private static final Random randNumGen = new Random(735122); // Allow replay
 
 	public static void main(String[] args) throws IOException {
-		int batchSize = 2048; // how many examples to simultaneously train in the network
+		String modelName = "level3Small";
+		ParcoursData.mainF(trainPath, n -> n.contains("level3"));
+		TrainNetworkLevel3Small.mainN(modelName);
+		ParcoursDataSolutionLevel1.mainR(modelName);
+	}
+	public static void mainN(String modelName) throws IOException {
+		int batchSize = 256; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
-		int channels = 1;
-		int numEpochs = 40;
+		int channels = 3;
+		int numEpochs = 100;
 
-		String modelName = "level1";
-		String statsFileName = "statsLevel1";
+		String statsFileName = "stats_"+modelName;
 		
 		ensureDirectory(modelPath);
 		ensureDirectory(logsPath);
@@ -63,7 +71,7 @@ public class TrainNetworkLevel1 {
 			throw new RuntimeException("No datas found in " + parentDir.getAbsolutePath());
 
 		int classes = parentDir.list().length;
-		var conf = networkConfiguration(height, width, 1, classes, rngSeed);
+		var conf = networkConfiguration(height, width, channels, classes, rngSeed);
 		var network = new MultiLayerNetwork(conf);
 
 		network.init();
@@ -78,8 +86,8 @@ public class TrainNetworkLevel1 {
 		InputSplit trainData = filesInDirSplit[0];
 		InputSplit testData = filesInDirSplit[0];
 
-		ImageTransform transform = new MultiImageTransform();
-		//ImageTransform transform = new MultiImageTransform(randNumGen, new RotateImageTransform(10.f));
+		//ImageTransform transform = null;
+		ImageTransform transform = new MultiImageTransform(randNumGen, new RotateImageTransform(10.f));
 
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
@@ -103,7 +111,7 @@ public class TrainNetworkLevel1 {
 		dataTestIter.setPreProcessor(imagePreProcessingScaler);
 
 		// pass a training listener that reports score every 10 iterations
-		int listenerFrequency = 1;
+		int listenerFrequency = 100;
 		network.addListeners(new ScoreIterationListener(listenerFrequency));
 		boolean reportScore = true;
 		boolean reportGC = true;
@@ -142,24 +150,43 @@ public class TrainNetworkLevel1 {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
 				.cacheMode(CacheMode.HOST)
-				.updater(new Nesterovs(0.005, 0.9)) // learning rate, momentum
+				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 				.list()
+				.layer(new ConvolutionLayer.Builder(3, 3)//5, 5
+						.name("conv1")
+						.stride(1, 1)
+						.nOut(20)  //20
+						.activation(Activation.RELU)
+						.convolutionMode(ConvolutionMode.Same)
+						.build())
+				.layer(new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+						.name("pool1")
+						.kernelSize(2, 2)
+						.stride(2, 2)
+						.build())
+				.layer(new ConvolutionLayer.Builder(3, 3)
+						.name("conv2")
+						.stride(1, 1) // nIn need not specified in later layers
+						.nOut(20)
+						.activation(Activation.RELU)
+						.convolutionMode(ConvolutionMode.Same)
+						.build())
+				.layer(new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+						.name("pool2")
+						.kernelSize(2, 2)
+						.stride(2, 2)
+						.build())
 				.layer(new DenseLayer.Builder()
 						.name("dense1")
 						.activation(Activation.RELU)
-						.nOut(256).build())
-				/*.layer(new DenseLayer.Builder()
-						.name("dense2")
-						.activation(Activation.RELU)
-						.nOut(128).build())*/
+						.nOut(512).build())
 				.layer(new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
 						.name("output")
 						.activation(Activation.SOFTMAX)
 						.nOut(outputNum).build())
-				.setInputType(InputType.convolutional(numRows, numColumns, channels)) // InputType.convolutional for normal image or convolutionalFlat 
-				//.setInputType(InputType.convolutional(numRows, numColumns, channels)) // InputType.convolutional for normal image or convolutionalFlat 
+				.setInputType(InputType.convolutionalFlat(numRows, numColumns, channels)) // InputType.convolutional for normal image or convolutionalFlat 
 				.build();
 	}
 	

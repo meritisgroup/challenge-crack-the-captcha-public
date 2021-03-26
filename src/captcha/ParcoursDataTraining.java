@@ -27,7 +27,7 @@ import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
  * @author gaeta
  *
  */
-public class ParcoursDataSolutionLevel1 {
+public class ParcoursDataTraining {
 
 	final static String dataPath = "datas"; // Path to data folder
 	final static String debugPath = dataPath + "/debug"; // Path to debug folder
@@ -42,14 +42,12 @@ public class ParcoursDataSolutionLevel1 {
 	
 	
 	public static void main(String[] args) throws IOException {
-		mainR("level3Conv_2");
-	}
-	public static void mainR(String modelName) throws IOException {
 		ensureDirectories();
 
-		String dataPath = testPath;
+		String dataPath = trainPath;
 
-		String resultatSuffix = ".train";
+		String modelName = "level3Conv_2";
+		String resultatSuffix = ".train.err";
 
 		MultiLayerNetwork network = MultiLayerNetwork.load(new File(modelPath + "/" + modelName + ".bin"), false);
 		
@@ -106,8 +104,11 @@ public class ParcoursDataSolutionLevel1 {
 					r+=gr.guess;
 					e*=gr.confident;
 				}
-				resultat.println(name+","+r);
-				resultatC.println(name+","+r+","+e);
+				if (!name.equals(r)) {
+					resultat.println(name+","+r);
+					resultatC.println(name+","+r+","+e);
+				}
+				
 			}
 		}
 		
