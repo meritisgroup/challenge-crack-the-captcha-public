@@ -35,19 +35,7 @@ public class AnalyseSmallConv {
 		var resultat = new PrintStream(new BufferedOutputStream(new FileOutputStream(output)));
 		
 		
-		Map<Integer, GuessResult> datas = new HashMap<>();
-		try (Scanner scan = new Scanner(new BufferedInputStream(new FileInputStream(coeffs)))) {
-			while (scan.hasNext()) {
-				String line = scan.nextLine();
-				var split = line.split(",");
-				
-				int id = Integer.parseInt(split[0]);
-				String guessed = split[1];
-				double confident = Double.parseDouble(split[2]);
-				
-				datas.put(id, new GuessResult(guessed, confident));
-			}
-		}
+		Map<Integer, GuessResult> datas = read(coeffs);
 		Map<Integer, String> datasHelper = new HashMap<>();
 		try (Scanner scan = new Scanner(new BufferedInputStream(new FileInputStream(dataPath+"/helper.txt")))) {
 			while (scan.hasNext()) {
@@ -67,5 +55,23 @@ public class AnalyseSmallConv {
 		});
 		
 		resultat.close();
+	}
+
+
+	private static Map<Integer, GuessResult> read(String coeffs) throws FileNotFoundException {
+		Map<Integer, GuessResult> datas = new HashMap<>();
+		try (Scanner scan = new Scanner(new BufferedInputStream(new FileInputStream(coeffs)))) {
+			while (scan.hasNext()) {
+				String line = scan.nextLine();
+				var split = line.split(",");
+				
+				int id = Integer.parseInt(split[0]);
+				String guessed = split[1];
+				double confident = Double.parseDouble(split[2]);
+				
+				datas.put(id, new GuessResult(guessed, confident));
+			}
+		}
+		return datas;
 	}
 }

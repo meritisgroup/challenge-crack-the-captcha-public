@@ -50,7 +50,7 @@ public class TrainNetworkLevel3Conv2 {
 
 	public static void main(String[] args) throws IOException {
 		TrainNetworkLevel3Conv2.mainN(args);
-		ParcoursDataSolutionLevel1.main(args);
+		ParcoursDataSolutionLevel1.mainR("level3Bg_2_");
 	}
 	public static void mainN(String[] args) throws IOException {
 		int batchSize = 1024; // how many examples to simultaneously train in the network
@@ -60,7 +60,7 @@ public class TrainNetworkLevel3Conv2 {
 		int channels = 3;
 		int numEpochs = 1000;
 
-		String modelName = "level3Small_2_";
+		String modelName = "level3Bg_2_";
 		String statsFileName = "stats_"+modelName;
 		
 		ensureDirectory(modelPath);
@@ -152,7 +152,7 @@ public class TrainNetworkLevel3Conv2 {
 		return new NeuralNetConfiguration.Builder()
 				.seed(rngSeed)
 				.cacheMode(CacheMode.HOST)
-				.updater(new Nesterovs(0.0001, 0.9)) // learning rate, momentum
+				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 				.dropOut(0.9)
@@ -204,14 +204,6 @@ public class TrainNetworkLevel3Conv2 {
 						.name("dense1")
 						.activation(Activation.RELU)
 						.nOut(512).build())
-				.layer(new DenseLayer.Builder()
-						.name("dense2")
-						.activation(Activation.RELU)
-						.nOut(512).build())
-				/*.layer(new DenseLayer.Builder()
-						.name("dense2")
-						.activation(Activation.RELU)
-						.nOut(128).build())*/
 				.layer(new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
 						.name("output")
 						.activation(Activation.SOFTMAX)
