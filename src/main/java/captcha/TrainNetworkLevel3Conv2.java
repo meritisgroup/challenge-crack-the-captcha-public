@@ -53,7 +53,7 @@ public class TrainNetworkLevel3Conv2 {
 		ParcoursDataSolutionLevel1.mainR("level3Bg_2_");
 	}
 	public static void mainN(String[] args) throws IOException {
-		int batchSize = 1024; // how many examples to simultaneously train in the network
+		int batchSize = 256; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
@@ -88,8 +88,8 @@ public class TrainNetworkLevel3Conv2 {
 
 		//ImageTransform transform = null;
 		ImageTransform transform = new MultiImageTransform(randNumGen
-				, new ScaleImageTransform(randNumGen, 4.f)
-				, new RotateImageTransform(randNumGen, 10.f));
+				, new ScaleImageTransform(randNumGen, 1.f)
+				, new RotateImageTransform(randNumGen, 1.f));
 
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
