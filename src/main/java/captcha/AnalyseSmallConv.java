@@ -26,35 +26,34 @@ public class AnalyseSmallConv {
 	
 	public static void main(String[] args) throws FileNotFoundException {
 
-		String modelName = "level3Conv_2";
 		String resultatSuffix = "";//".train";
 		
+		String modelName = "level3Conv_2";
 		String coeffs = modelPath +"/"+modelName+resultatSuffix+".stats.txt";
+		String modelName2 = "level3Small";
+		String coeffs2 = modelPath +"/"+modelName2+resultatSuffix+".stats.txt";
 
-		String output = modelPath +"/"+modelName+".complet.txt";
-		var resultat = new PrintStream(new BufferedOutputStream(new FileOutputStream(output)));
-		
 		
 		Map<Integer, GuessResult> datas = read(coeffs);
-		Map<Integer, String> datasHelper = new HashMap<>();
-		try (Scanner scan = new Scanner(new BufferedInputStream(new FileInputStream(dataPath+"/helper.txt")))) {
-			while (scan.hasNext()) {
-				String line = scan.nextLine();
-				var split = line.split(",");
-				
-				int id = Integer.parseInt(split[0]);
-				String guessed = split[1];
-				
-				datas.put(id, new GuessResult(guessed, 1.));
-				datasHelper.put(id,  guessed);
+		Map<Integer, GuessResult> datas2 = read(coeffs2);
+		
+		File[] listFiles = new File(dataPath).listFiles();
+		
+		for (File f : listFiles) {
+			
+			String fileName = f.getName();
+			
+			if (!fileName.contains("level3")) continue;
+			
+			int index = Integer.parseInt(fileName.split("\\.")[0]);
+			var v = datas.get(index);
+			var v2 = datas2.get(index);
+			
+			if (!v2.guess.equals(v.guess)) {
+				System.out.println(v.guess + "-"+v2.guess + " " + fileName);
 			}
 		}
-		
-		datas.entrySet().stream().forEach(e -> {
-			resultat.println(e.getKey() +","+e.getValue().guess);
-		});
-		
-		resultat.close();
+	
 	}
 
 

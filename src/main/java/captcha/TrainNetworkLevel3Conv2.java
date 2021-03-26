@@ -53,7 +53,7 @@ public class TrainNetworkLevel3Conv2 {
 		ParcoursDataSolutionLevel1.mainR("level3Bg_2_");
 	}
 	public static void mainN(String[] args) throws IOException {
-		int batchSize = 256; // how many examples to simultaneously train in the network
+		int batchSize = 1024; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
@@ -82,7 +82,7 @@ public class TrainNetworkLevel3Conv2 {
 		ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
 		BalancedPathFilter pathFilter = new BalancedPathFilter(randNumGen, allowedExtensions, labelMaker);
 
-		InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter, 80, 20); // 80% train 20% tests
+		InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter); // 80% train 20% tests
 		InputSplit trainData = filesInDirSplit[0];
 		InputSplit testData = filesInDirSplit[0];
 
