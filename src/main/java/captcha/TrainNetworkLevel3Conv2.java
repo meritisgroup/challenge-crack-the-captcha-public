@@ -2,19 +2,26 @@ package captcha;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.Random;
 
 import org.datavec.api.io.filters.BalancedPathFilter;
 import org.datavec.api.io.labels.ParentPathLabelGenerator;
+import org.datavec.api.io.labels.PathLabelGenerator;
 import org.datavec.api.split.FileSplit;
 import org.datavec.api.split.InputSplit;
+import org.datavec.api.util.ndarray.RecordConverter;
+import org.datavec.api.writable.IntWritable;
+import org.datavec.api.writable.Writable;
 import org.datavec.image.loader.BaseImageLoader;
 import org.datavec.image.recordreader.ImageRecordReader;
 import org.datavec.image.transform.ImageTransform;
 import org.datavec.image.transform.MultiImageTransform;
 import org.datavec.image.transform.RotateImageTransform;
 import org.datavec.image.transform.ScaleImageTransform;
-import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.CacheMode;
@@ -30,15 +37,79 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.PerformanceListener;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.ui.model.stats.StatsListener;
-import org.deeplearning4j.ui.model.storage.FileStatsStorage;
+//import org.deeplearning4j.ui.model.stats.StatsListener;
+//import org.deeplearning4j.ui.model.storage.FileStatsStorage;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.concurrency.AffinityManager;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+import com.github.marschall.memoryfilesystem.MemoryFileSystemBuilder;
+
+
 public class TrainNetworkLevel3Conv2 {
+
+	private static final class MemFSImageRecordReader extends ImageRecordReader {
+		private final Path samplesPath;
+		private static final long serialVersionUID = 1L;
+
+		private MemFSImageRecordReader(long height, long width, long channels, PathLabelGenerator labelGenerator,
+				Path samplesPath) {
+			super(height, width, channels, labelGenerator);
+			this.samplesPath = samplesPath;
+		}
+
+		@Override
+		    public List<Writable> next() {
+		        if (iter != null) {
+		            List<Writable> ret;
+		            File image = iter.next();
+		            currentFile = image;
+
+		            if (image.isDirectory())
+		                return next();
+		            try {
+		                invokeListeners(image);
+		                
+		                INDArray array = imageLoader.asMatrix(
+		                		Files.newInputStream(samplesPath.resolve(image.getParentFile().getName()).resolve(image.getName())));
+		                //INDArray array = imageLoader.asMatrix(image);
+		                if(!nchw_channels_first){
+		                    array = array.permute(0,2,3,1);     //NCHW to NHWC
+		                }
+
+		                Nd4j.getAffinityManager().ensureLocation(array, AffinityManager.Location.DEVICE);
+		                ret = RecordConverter.toRecord(array);
+		                if (appendLabel || writeLabel){
+		                    if(labelMultiGenerator != null){
+		                        ret.addAll(labelMultiGenerator.getLabels(image.getPath()));
+		                    } else {
+		                        if (labelGenerator.inferLabelClasses()) {
+		                            //Standard classification use case (i.e., handle String -> integer conversion
+		                            ret.add(new IntWritable(labels.indexOf(getLabel(image.getPath()))));
+		                        } else {
+		                            //Regression use cases, and PathLabelGenerator instances that already map to integers
+		                            ret.add(labelGenerator.getLabelForPath(image.getPath()));
+		                        }
+		                    }
+		                }
+		            } catch (Exception e) {
+		                throw new RuntimeException(e);
+		            }
+		            return ret;
+		        } else if (record != null) {
+		            hitImage = true;
+		            invokeListeners(record);
+		            return record;
+		        }
+		        throw new IllegalStateException("No more elements");
+		    }
+	}
+
 
 	final static String dataPath = "datas"; // Path to data folder
 	final static String modelPath = dataPath + "/models"; // Path to models folder
@@ -53,7 +124,7 @@ public class TrainNetworkLevel3Conv2 {
 		ParcoursDataSolutionLevel1.mainR("level3Bg_2_");
 	}
 	public static void mainN(String[] args) throws IOException {
-		int batchSize = 256; // how many examples to simultaneously train in the network
+		int batchSize = 512; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
@@ -78,14 +149,18 @@ public class TrainNetworkLevel3Conv2 {
 
 		System.out.println(network.summary());
 
+		
+		
 		FileSplit filesInDir = new FileSplit(parentDir, allowedExtensions, randNumGen);
 		ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
 		BalancedPathFilter pathFilter = new BalancedPathFilter(randNumGen, allowedExtensions, labelMaker);
 
 		InputSplit[] filesInDirSplit = filesInDir.sample(pathFilter); // 80% train 20% tests
-		InputSplit[] filesInDirSplitTest = filesInDir.sample(pathFilter,20); // 80% train 20% tests
+		InputSplit[] filesInDirSplitTest = filesInDir.sample(pathFilter); // 80% train 20% tests
 		InputSplit trainData = filesInDirSplit[0];
 		InputSplit testData = filesInDirSplitTest[0];
+		
+		
 
 		//ImageTransform transform = null;
 		ImageTransform transform = new MultiImageTransform(randNumGen
@@ -95,10 +170,11 @@ public class TrainNetworkLevel3Conv2 {
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
 
-		ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, labelMaker);
+		Path samplesPath = copyIntoMemory(trainPath);
+		ImageRecordReader recordReader = new MemFSImageRecordReader(height, width, channels, labelMaker, samplesPath);
 		recordReader.initialize(trainData, transform);
 
-		ImageRecordReader recordTestReader = new ImageRecordReader(height, width, channels, labelMaker);
+		ImageRecordReader recordTestReader = new MemFSImageRecordReader(height, width, channels, labelMaker, samplesPath);
 		recordTestReader.initialize(testData);
 
 		int outputNum = recordReader.numLabels();
@@ -114,14 +190,14 @@ public class TrainNetworkLevel3Conv2 {
 		dataTestIter.setPreProcessor(imagePreProcessingScaler);
 
 		// pass a training listener that reports score every 10 iterations
-		int listenerFrequency = 200;
+		int listenerFrequency = 1000;
 		network.addListeners(new ScoreIterationListener(listenerFrequency));
 		boolean reportScore = false;
 		boolean reportGC = true;
 		network.addListeners(new PerformanceListener(listenerFrequency, reportScore, reportGC));
 
-		StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/"+statsFileName+".bin"));
-		network.addListeners(new StatsListener(statsStorage, listenerFrequency));
+		//StatsStorage statsStorage = new FileStatsStorage(new File(logsPath + "/"+statsFileName+".bin"));
+		//network.addListeners(new StatsListener(statsStorage, listenerFrequency));
 		// Listener for an UI on http://localhost:9000
 		// UIServer uiServer = UIServer.getInstance();
 		// uiServer.attach(statsStorage);
@@ -224,5 +300,37 @@ public class TrainNetworkLevel3Conv2 {
 	private static void ensureDirectory(String path) {
 		if (!new File(path).exists())
 			new File(path).mkdirs();
+	}
+	
+	public static Path copyIntoMemory(String path) throws IOException {
+		File parentDir = new File(path);
+		Path samplesPath = parentDir.toPath();
+		FileSystem fileSystem = MemoryFileSystemBuilder.newEmpty().build();
+		Path p = fileSystem.getPath("p");
+		Files.createDirectories(p);
+		copyFolder(samplesPath, p);
+		
+		return p;
+	}
+	
+	
+	public static void copyFolder(Path src, Path dest) {
+	    try {
+	        Files.walk( src ).forEach( s -> {
+	            try {
+	                Path d = dest.resolve( src.relativize(s).toString().replace('\\', '/') );
+	                if( Files.isDirectory( s ) ) {
+	                    if( !Files.exists( d ) )
+	                        Files.createDirectory( d );
+	                    return;
+	                }
+	                Files.copy( s, d );// use flag to override existing
+	            } catch( Exception e ) {
+	                e.printStackTrace();
+	            }
+	        });
+	    } catch( Exception ex ) {
+	        ex.printStackTrace();
+	    }
 	}
 }
