@@ -124,7 +124,7 @@ public class TrainNetworkLevel3Conv2 {
 		ParcoursDataSolutionLevel1.mainR("level3Bg_2_");
 	}
 	public static void mainN(String[] args) throws IOException {
-		int batchSize = 512; // how many examples to simultaneously train in the network
+		int batchSize = 1024; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
@@ -170,11 +170,11 @@ public class TrainNetworkLevel3Conv2 {
 		// Normalize entre 0 et 1
 		ImagePreProcessingScaler imagePreProcessingScaler = new ImagePreProcessingScaler();
 
-		Path samplesPath = copyIntoMemory(trainPath);
-		ImageRecordReader recordReader = new MemFSImageRecordReader(height, width, channels, labelMaker, samplesPath);
+		//Path samplesPath = copyIntoMemory(trainPath);
+		ImageRecordReader recordReader = new ImageRecordReader(height, width, channels, labelMaker);
 		recordReader.initialize(trainData, transform);
 
-		ImageRecordReader recordTestReader = new MemFSImageRecordReader(height, width, channels, labelMaker, samplesPath);
+		ImageRecordReader recordTestReader = new ImageRecordReader(height, width, channels, labelMaker);
 		recordTestReader.initialize(testData);
 
 		int outputNum = recordReader.numLabels();
