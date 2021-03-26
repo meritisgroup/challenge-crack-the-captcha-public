@@ -53,7 +53,7 @@ public class TrainNetworkLevel3Conv2 {
 		ParcoursDataSolutionLevel1.mainR("level3Bg_2_");
 	}
 	public static void mainN(String[] args) throws IOException {
-		int batchSize = 512; // how many examples to simultaneously train in the network
+		int batchSize = 256; // how many examples to simultaneously train in the network
 		int rngSeed = 3289322;
 		int height = 35;
 		int width = 20;
