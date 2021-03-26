@@ -155,7 +155,7 @@ public class TrainNetworkLevel3Conv2 {
 				.updater(new Nesterovs(0.0005, 0.9)) // learning rate, momentum
 				.weightInit(WeightInit.XAVIER)
 				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-				.dropOut(0.9)
+				.dropOut(0.95)
 				.list()
 				.layer(new ConvolutionLayer.Builder(5, 5)//5, 5
 						.name("filter")
@@ -204,6 +204,14 @@ public class TrainNetworkLevel3Conv2 {
 						.name("dense1")
 						.activation(Activation.RELU)
 						.nOut(512).build())
+				.layer(new DenseLayer.Builder()
+						.name("dense2")
+						.activation(Activation.RELU)
+						.nOut(256).build())
+				/*.layer(new DenseLayer.Builder()
+						.name("dense2")
+						.activation(Activation.RELU)
+						.nOut(128).build())*/
 				.layer(new OutputLayer.Builder(LossFunctions.LossFunction.MCXENT)
 						.name("output")
 						.activation(Activation.SOFTMAX)
